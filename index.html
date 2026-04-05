@@ -100,11 +100,13 @@
       display: flex;
       align-items: center;
       gap: 14px;
-      padding: 14px 0;
+      padding: 14px 6px;
       border-bottom: 1px solid #eef0f3;
+      cursor: pointer;
+      transition: background .15s;
+      border-radius: 8px;
     }
     .tx-item:last-child { border-bottom: none; }
-    .tx-item { cursor: pointer; transition: background .15s; border-radius: 8px; padding-left: 6px; padding-right: 6px; }
     .tx-item:hover { background: #f0f4fa; }
     .tx-icon {
       width: 42px; height: 42px; border-radius: 50%;
@@ -739,7 +741,8 @@
     }
 
     balance -= amount;
-    transactions.unshift({ type:'out', name: 'Transfert sortant - ' + name, date: 'Bugün', amount, iban: cleanedIban, desc: desc || undefined });
+    const today = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+    transactions.unshift({ type:'out', name: 'Transfert sortant - ' + name, date: today, amount, iban: cleanedIban, desc: desc || undefined });
     saveState();
 
     alertEl.textContent = translate('transfer_success');
@@ -805,7 +808,7 @@
     const ibanRow = document.getElementById('tx-modal-iban-row');
     if (t.iban) {
       ibanRow.style.display = 'flex';
-      document.getElementById('tx-modal-iban').textContent = t.iban.replace(/(.{4})/g, '$1 ').trim();
+      document.getElementById('tx-modal-iban').textContent = t.iban.match(/.{1,4}/g).join(' ');
     } else {
       ibanRow.style.display = 'none';
     }
