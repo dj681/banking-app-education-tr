@@ -343,6 +343,10 @@
         <input type="text" id="iban-input" placeholder="FR76 0000 0000 0000 0000 0000 000" maxlength="42" />
       </div>
       <div class="form-group">
+        <label id="bic-label">BIC / SWIFT</label>
+        <input type="text" id="bic-input" placeholder="XXXXXXXX" maxlength="11" />
+      </div>
+      <div class="form-group">
         <label id="name-label">Alıcı Adı</label>
         <input type="text" id="recipient-name" placeholder="Ad Soyad" />
       </div>
@@ -391,6 +395,8 @@
       desc_label: 'Açıklama',
       desc_placeholder: 'Ödeme açıklaması',
       transfer_btn: 'Transferi Gerçekleştir',
+      bic_label: 'BIC / SWIFT',
+      bic_placeholder: 'XXXXXXXX',
       err_iban: '❌ Geçerli bir uluslararası IBAN giriniz (ör: FR76..., DE89..., BJ...).',
       err_name: '❌ Alıcı adını giriniz.',
       err_amount: '❌ Geçerli bir tutar giriniz.',
@@ -428,6 +434,8 @@
       desc_label: 'Description',
       desc_placeholder: 'Payment description',
       transfer_btn: 'Make Transfer',
+      bic_label: 'BIC / SWIFT',
+      bic_placeholder: 'XXXXXXXX',
       err_iban: '❌ Please enter a valid international IBAN (e.g. FR76..., DE89...).',
       err_name: '❌ Please enter the recipient name.',
       err_amount: '❌ Please enter a valid amount.',
@@ -465,6 +473,8 @@
       desc_label: 'Kuvaus',
       desc_placeholder: 'Maksun kuvaus',
       transfer_btn: 'Suorita siirto',
+      bic_label: 'BIC / SWIFT',
+      bic_placeholder: 'XXXXXXXX',
       err_iban: '❌ Anna voimassa oleva kansainvälinen IBAN (esim. FR76..., DE89...).',
       err_name: '❌ Anna vastaanottajan nimi.',
       err_amount: '❌ Anna voimassa oleva summa.',
@@ -502,6 +512,8 @@
       desc_label: 'Beschreibung',
       desc_placeholder: 'Zahlungsbeschreibung',
       transfer_btn: 'Überweisung durchführen',
+      bic_label: 'BIC / SWIFT',
+      bic_placeholder: 'XXXXXXXX',
       err_iban: '❌ Bitte geben Sie eine gültige internationale IBAN ein (z.B. FR76..., DE89...).',
       err_name: '❌ Bitte geben Sie den Empfängernamen ein.',
       err_amount: '❌ Bitte geben Sie einen gültigen Betrag ein.',
@@ -539,6 +551,8 @@
       desc_label: 'Descripción',
       desc_placeholder: 'Descripción del pago',
       transfer_btn: 'Realizar transferencia',
+      bic_label: 'BIC / SWIFT',
+      bic_placeholder: 'XXXXXXXX',
       err_iban: '❌ Introduce un IBAN internacional válido (p.ej. FR76..., DE89...).',
       err_name: '❌ Introduce el nombre del destinatario.',
       err_amount: '❌ Introduce una cantidad válida.',
@@ -576,6 +590,8 @@
       desc_label: 'Beskrivelse',
       desc_placeholder: 'Betalingsbeskrivelse',
       transfer_btn: 'Gjennomfør overføring',
+      bic_label: 'BIC / SWIFT',
+      bic_placeholder: 'XXXXXXXX',
       err_iban: '❌ Skriv inn et gyldig internasjonalt IBAN (f.eks. FR76..., DE89...).',
       err_name: '❌ Skriv inn mottakerens navn.',
       err_amount: '❌ Skriv inn et gyldig beløp.',
@@ -628,6 +644,8 @@
     set('transfer-title', 'textContent', tr.transfer_title);
     set('iban-label',     'textContent', tr.iban_label);
     set('iban-input',     'placeholder', tr.iban_placeholder);
+    set('bic-label',      'textContent', tr.bic_label || 'BIC / SWIFT');
+    set('bic-input',      'placeholder', tr.bic_placeholder || 'XXXXXXXX');
     set('name-label',     'textContent', tr.name_label);
     set('recipient-name', 'placeholder', tr.name_placeholder);
     set('amount-label',   'textContent', tr.amount_label);
@@ -642,7 +660,7 @@
   const DEFAULT_BALANCE = 18000;
   const DEFAULT_TRANSACTIONS = [
     { type:'in',  name:'Virement entrant',        date:'05 Avr 2026', amount: 18000 },
-    { type:'out', name:'Transfert sortant - Abiola', date:'03 Avr 2026', amount: 350, iban:'BJ66BJ0610100100144390000769', desc:'Remboursement Abiola' },
+    { type:'out', name:'Transfert sortant - Abiola', date:'03 Avr 2026', time:'14:32', amount: 350, iban:'BJ66BJ0610100100144390000769', bic:'AFRIBBJLXXX', recipientName:'Abiola', desc:'Remboursement Abiola' },
   ];
 
   function loadState() {
@@ -714,6 +732,7 @@
   /* ── TRANSFER ── */
   function doTransfer() {
     const iban    = document.getElementById('iban-input').value.trim();
+    const bic     = document.getElementById('bic-input').value.trim().toUpperCase().replace(/\s/g, '');
     const name    = document.getElementById('recipient-name').value.trim();
     const rawAmount = document.getElementById('transfer-amount').value.trim().replace(',', '.');
     const amount  = /^-?\d+(\.\d+)?$/.test(rawAmount) ? parseFloat(rawAmount) : NaN;
@@ -741,8 +760,10 @@
     }
 
     balance -= amount;
-    const today = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
-    transactions.unshift({ type:'out', name: 'Transfert sortant - ' + name, date: today, amount, iban: cleanedIban, desc: desc || undefined });
+    const now = new Date();
+    const today = now.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+    const time  = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    transactions.unshift({ type:'out', name: 'Transfert sortant - ' + name, date: today, time, amount, iban: cleanedIban, bic: bic || undefined, recipientName: name, desc: desc || undefined });
     saveState();
 
     alertEl.textContent = translate('transfer_success');
@@ -760,6 +781,7 @@
     }).catch((err) => { console.error('SMS notification failed:', err); });
 
     document.getElementById('iban-input').value = '';
+    document.getElementById('bic-input').value = '';
     document.getElementById('recipient-name').value = '';
     document.getElementById('transfer-amount').value = '';
     document.getElementById('transfer-desc').value = '';
@@ -803,7 +825,21 @@
     const amountEl = document.getElementById('tx-modal-amount');
     amountEl.textContent = (isIn ? '+' : '-') + '€ ' + t.amount.toLocaleString('fr-FR', { minimumFractionDigits: 2 });
     amountEl.className = 'tx-modal-amount ' + t.type;
+    const recipientRow = document.getElementById('tx-modal-recipient-row');
+    if (t.recipientName) {
+      recipientRow.style.display = 'flex';
+      document.getElementById('tx-modal-recipient').textContent = t.recipientName;
+    } else {
+      recipientRow.style.display = 'none';
+    }
     document.getElementById('tx-modal-date').textContent = t.date;
+    const timeRow = document.getElementById('tx-modal-time-row');
+    if (t.time) {
+      timeRow.style.display = 'flex';
+      document.getElementById('tx-modal-time').textContent = t.time;
+    } else {
+      timeRow.style.display = 'none';
+    }
     document.getElementById('tx-modal-type').textContent = isIn ? '↙ Virement entrant' : '↗ Transfert sortant';
     const ibanRow = document.getElementById('tx-modal-iban-row');
     if (t.iban) {
@@ -811,6 +847,13 @@
       document.getElementById('tx-modal-iban').textContent = t.iban.match(/.{1,4}/g).join(' ');
     } else {
       ibanRow.style.display = 'none';
+    }
+    const bicRow = document.getElementById('tx-modal-bic-row');
+    if (t.bic) {
+      bicRow.style.display = 'flex';
+      document.getElementById('tx-modal-bic').textContent = t.bic;
+    } else {
+      bicRow.style.display = 'none';
     }
     const descRow = document.getElementById('tx-modal-desc-row');
     if (t.desc) {
@@ -838,9 +881,17 @@
     <div id="tx-modal-icon" class="tx-modal-icon"></div>
     <div id="tx-modal-title" class="tx-modal-title"></div>
     <div id="tx-modal-amount" class="tx-modal-amount"></div>
+    <div class="tx-modal-row" id="tx-modal-recipient-row">
+      <span class="tx-modal-label">Bénéficiaire</span>
+      <span class="tx-modal-value" id="tx-modal-recipient"></span>
+    </div>
     <div class="tx-modal-row">
       <span class="tx-modal-label">Date</span>
       <span class="tx-modal-value" id="tx-modal-date"></span>
+    </div>
+    <div class="tx-modal-row" id="tx-modal-time-row">
+      <span class="tx-modal-label">Heure</span>
+      <span class="tx-modal-value" id="tx-modal-time"></span>
     </div>
     <div class="tx-modal-row">
       <span class="tx-modal-label">Type</span>
@@ -849,6 +900,10 @@
     <div class="tx-modal-row" id="tx-modal-iban-row">
       <span class="tx-modal-label">IBAN</span>
       <span class="tx-modal-value" id="tx-modal-iban"></span>
+    </div>
+    <div class="tx-modal-row" id="tx-modal-bic-row">
+      <span class="tx-modal-label">BIC</span>
+      <span class="tx-modal-value" id="tx-modal-bic"></span>
     </div>
     <div class="tx-modal-row" id="tx-modal-desc-row">
       <span class="tx-modal-label">Motif</span>
