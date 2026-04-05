@@ -217,12 +217,12 @@
 <div id="login-screen">
   <div id="lang-selector">
     <select id="lang-select" onchange="setLanguage(this.value)">
-      <option value="tr">🇹🇷 Türkçe</option>
-      <option value="en">🇬🇧 English</option>
-      <option value="fi">🇫🇮 Suomi</option>
-      <option value="de">🇩🇪 Deutsch</option>
-      <option value="es">🇪🇸 Español</option>
-      <option value="no">🇳🇴 Norsk</option>
+      <option value="tr" lang="tr">🇹🇷 Türkçe</option>
+      <option value="en" lang="en">🇬🇧 English</option>
+      <option value="fi" lang="fi">🇫🇮 Suomi</option>
+      <option value="de" lang="de">🇩🇪 Deutsch</option>
+      <option value="es" lang="es">🇪🇸 Español</option>
+      <option value="no" lang="no">🇳🇴 Norsk</option>
     </select>
   </div>
   <div class="login-box">
@@ -536,7 +536,7 @@
 
   let currentLang = 'tr';
 
-  function t(key) {
+  function translate(key) {
     return (translations[currentLang] && translations[currentLang][key]) || translations['tr'][key] || key;
   }
 
@@ -663,19 +663,19 @@
 
     const cleanedIban = iban.replace(/\s/g, '').toUpperCase();
     if (!/^[A-Z]{2}[0-9]{2}[A-Z0-9]{4,30}$/.test(cleanedIban)) {
-      alertEl.textContent = t('err_iban');
+      alertEl.textContent = translate('err_iban');
       alertEl.className = 'alert error'; return;
     }
     if (!name) {
-      alertEl.textContent = t('err_name');
+      alertEl.textContent = translate('err_name');
       alertEl.className = 'alert error'; return;
     }
     if (isNaN(amount) || amount <= 0) {
-      alertEl.textContent = t('err_amount');
+      alertEl.textContent = translate('err_amount');
       alertEl.className = 'alert error'; return;
     }
     if (amount > balance) {
-      alertEl.textContent = t('err_funds');
+      alertEl.textContent = translate('err_funds');
       alertEl.className = 'alert error'; return;
     }
 
@@ -683,7 +683,7 @@
     transactions.unshift({ type:'out', name: 'Transfer → ' + name, date: 'Bugün', amount });
     saveState();
 
-    alertEl.textContent = t('transfer_success');
+    alertEl.textContent = translate('transfer_success');
     alertEl.className = 'alert success';
 
     // Send SMS notification
@@ -725,7 +725,7 @@
       document.getElementById('main-nav').style.display = 'flex';
       document.getElementById('main-container').style.display = 'block';
     } else {
-      errEl.textContent = t('login_error');
+      errEl.textContent = translate('login_error');
     }
   }
 
