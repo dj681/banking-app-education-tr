@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BBVA bank</title>
+  <title>BBVA Mobile</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -162,6 +162,28 @@
     /* ── SECTION HEADER ── */
     .section-header { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; }
 
+    /* ── LANGUAGE SELECTOR ── */
+    #lang-selector {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 1;
+    }
+    #lang-selector select {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      border: 1.5px solid rgba(255,255,255,0.55);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    #lang-selector select:hover { background: rgba(255,255,255,0.28); }
+    #lang-selector select option { background: #004A97; color: #fff; }
+
     /* ── LOGIN ── */
     #login-screen {
       position: fixed; inset: 0;
@@ -193,24 +215,34 @@
 
 <!-- ── LOGIN SCREEN ── -->
 <div id="login-screen">
+  <div id="lang-selector">
+    <select id="lang-select" onchange="setLanguage(this.value)">
+      <option value="tr">🇹🇷 Türkçe</option>
+      <option value="en">🇬🇧 English</option>
+      <option value="fi">🇫🇮 Suomi</option>
+      <option value="de">🇩🇪 Deutsch</option>
+      <option value="es">🇪🇸 Español</option>
+      <option value="no">🇳🇴 Norsk</option>
+    </select>
+  </div>
   <div class="login-box">
-    <div class="login-logo">BBVA bank</div>
-    <div class="login-subtitle">Accès à votre espace bancaire</div>
+    <div class="login-logo">BBVA Mobile</div>
+    <div class="login-subtitle" id="login-subtitle">Bankacılık alanınıza erişin</div>
     <div class="form-group">
-      <label for="user-code-input">Code utilisateur</label>
-      <input type="password" id="user-code-input" placeholder="Entrez votre code" autocomplete="off" onkeydown="if(event.key==='Enter') doLogin()" />
+      <label for="user-code-input" id="login-code-label">Kullanıcı kodu</label>
+      <input type="password" id="user-code-input" placeholder="Kodunuzu girin" autocomplete="off" onkeydown="if(event.key==='Enter') doLogin()" />
     </div>
     <div id="login-error"></div>
-    <button class="btn btn-full" onclick="doLogin()">Se connecter</button>
+    <button class="btn btn-full" id="login-btn" onclick="doLogin()">Giriş Yap</button>
   </div>
 </div>
 
 <nav id="main-nav" style="display:none;">
-  <span class="nav-brand">BBVA bank</span>
+  <span class="nav-brand">BBVA Mobile</span>
   <div class="nav-links">
-    <button class="active" onclick="showPage('dashboard', event)">Genel Bakış</button>
-    <button onclick="showPage('transfer', event)">Transfer</button>
-    <button onclick="showPage('education', event)">Eğitim</button>
+    <button class="active" id="nav-btn-dashboard" onclick="showPage('dashboard', event)">Genel Bakış</button>
+    <button id="nav-btn-transfer" onclick="showPage('transfer', event)">Transfer</button>
+    <button id="nav-btn-education" onclick="showPage('education', event)">Eğitim</button>
   </div>
 </nav>
 
@@ -219,63 +251,334 @@
   <!-- ── DASHBOARD ── -->
   <div id="page-dashboard" class="page active">
     <div class="account-hero">
-      <div class="label">Toplam Bakiye</div>
+      <div class="label" id="balance-label">Toplam Bakiye</div>
       <div class="balance" id="display-balance">€ 18.000,00</div>
       <div class="iban">TR12 0001 2345 6789 0123 4567 89</div>
     </div>
 
     <div class="grid-3">
       <div class="card">
-        <div class="card-title">Bu Ay Gelen</div>
+        <div class="card-title" id="income-label">Bu Ay Gelen</div>
         <div class="card-value positive" id="total-income">₺ 3.200,00</div>
       </div>
       <div class="card">
-        <div class="card-title">Bu Ay Giden</div>
+        <div class="card-title" id="expense-label">Bu Ay Giden</div>
         <div class="card-value negative" id="total-expense">₺ 750,00</div>
       </div>
 
     </div>
 
     <div class="card">
-      <div class="section-header">Son İşlemler</div>
+      <div class="section-header" id="recent-tx-label">Son İşlemler</div>
       <ul class="tx-list" id="tx-list"></ul>
     </div>
   </div>
 
   <!-- ── TRANSFER ── -->
   <div id="page-transfer" class="page">
-    <div class="section-header">Para Transferi</div>
+    <div class="section-header" id="transfer-title">Para Transferi</div>
     <div class="card">
       <div id="transfer-alert" class="alert"></div>
       <div class="form-group">
-        <label>Alıcı IBAN</label>
+        <label id="iban-label">Alıcı IBAN</label>
         <input type="text" id="iban-input" placeholder="FR76 0000 0000 0000 0000 0000 000" maxlength="42" />
       </div>
       <div class="form-group">
-        <label>Alıcı Adı</label>
+        <label id="name-label">Alıcı Adı</label>
         <input type="text" id="recipient-name" placeholder="Ad Soyad" />
       </div>
       <div class="form-group">
-        <label>Tutar (€)</label>
+        <label id="amount-label">Tutar (€)</label>
         <input type="number" id="transfer-amount" placeholder="0,00" min="1" />
       </div>
       <div class="form-group">
-        <label>Açıklama</label>
+        <label id="desc-label">Açıklama</label>
         <input type="text" id="transfer-desc" placeholder="Ödeme açıklaması" />
       </div>
-      <button class="btn btn-full" onclick="doTransfer()">Transferi Gerçekleştir</button>
+      <button class="btn btn-full" id="transfer-btn" onclick="doTransfer()">Transferi Gerçekleştir</button>
     </div>
   </div>
 
   <!-- ── EDUCATION ── -->
   <div id="page-education" class="page">
-    <div class="section-header">Bankacılık Rehberi</div>
+    <div class="section-header" id="edu-title">Bankacılık Rehberi</div>
     <div class="edu-grid" id="edu-grid"></div>
   </div>
 
 </div>
 
 <script>
+  /* ── TRANSLATIONS ── */
+  const translations = {
+    tr: {
+      login_subtitle: 'Bankacılık alanınıza erişin',
+      login_code_label: 'Kullanıcı kodu',
+      login_placeholder: 'Kodunuzu girin',
+      login_btn: 'Giriş Yap',
+      login_error: '❌ Yanlış kullanıcı kodu.',
+      nav_dashboard: 'Genel Bakış',
+      nav_transfer: 'Transfer',
+      nav_education: 'Eğitim',
+      balance_label: 'Toplam Bakiye',
+      income_label: 'Bu Ay Gelen',
+      expense_label: 'Bu Ay Giden',
+      recent_tx: 'Son İşlemler',
+      transfer_title: 'Para Transferi',
+      iban_label: 'Alıcı IBAN',
+      iban_placeholder: 'FR76 0000 0000 0000 0000 0000 000',
+      name_label: 'Alıcı Adı',
+      name_placeholder: 'Ad Soyad',
+      amount_label: 'Tutar (€)',
+      desc_label: 'Açıklama',
+      desc_placeholder: 'Ödeme açıklaması',
+      transfer_btn: 'Transferi Gerçekleştir',
+      err_iban: '❌ Geçerli bir uluslararası IBAN giriniz (ör: FR76..., DE89..., BJ...).',
+      err_name: '❌ Alıcı adını giriniz.',
+      err_amount: '❌ Geçerli bir tutar giriniz.',
+      err_funds: '❌ Yetersiz bakiye.',
+      transfer_success: '✅ Transfer başarıyla gerçekleştirildi!',
+      edu_title: 'Bankacılık Rehberi',
+      edu_topics: [
+        { icon: '💳', title: 'Banka Kartı ve Kredi Kartı', summary: 'İkisi arasındaki farkı öğrenin.', detail: '<b>Banka Kartı (Debit):</b> Hesabınızdaki mevcut parayı kullanır; borç oluşturmaz.<br><b>Kredi Kartı:</b> Bankadan ödünç para kullanmanızı sağlar. Zamanında ödeme yapmazsanız faiz işler. Kredi puanınızı olumlu ya da olumsuz etkiler.' },
+        { icon: '📈', title: 'Faiz ve Getiri', summary: 'Paranızı nasıl büyütürsünüz?', detail: '<b>Basit Faiz:</b> Anapara üzerinden hesaplanır.<br><b>Bileşik Faiz:</b> Her dönem kazanılan faiz de anaparaya eklenerek büyüme hızlanır — "paranın parayı kazanması".<br><b>İpucu:</b> Uzun vadeli tasarruf için bileşik faiz güçlü bir araçtır.' },
+        { icon: '🛡️', title: 'Banka Güvenliği', summary: 'Hesabınızı koruma altına alın.', detail: '• Şifrelerinizi kimseyle paylaşmayın.<br>• SMS doğrulama (2FA) kullanın.<br>• Halka açık Wi-Fi\'de bankacılık işlemi yapmaktan kaçının.<br>• Hesap hareketlerinizi düzenli kontrol edin.<br>• Şüpheli işlemleri hemen bankaya bildirin.' },
+        { icon: '🏠', title: 'Konut Kredisi (Mortgage)', summary: 'Ev almanın finansal boyutu.', detail: '<b>Peşinat:</b> Genellikle ev değerinin %20\'si istenir.<br><b>Vade:</b> 10–30 yıl arasında değişir; vade uzadıkça aylık taksit azalır ancak toplam faiz artar.<br><b>Sabit / Değişken Faiz:</b> Sabit faiz öngörülebilirlik sunar; değişken faiz piyasaya göre dalgalanır.' },
+        { icon: '📊', title: 'Bütçe Yönetimi', summary: 'Gelirinizi akıllıca planlayın.', detail: '<b>50/30/20 Kuralı:</b><br>• %50 → Zorunlu giderler (kira, faturalar)<br>• %30 → İstekler (eğlence, yeme-içme)<br>• %20 → Tasarruf ve borç ödemeleri<br><br>Aylık bütçe takibi, gereksiz harcamaları görmenizi sağlar.' },
+        { icon: '🔄', title: 'EFT ve Havale', summary: 'Para transferi yöntemleri.', detail: '<b>Havale:</b> Aynı banka içinde anlık ve ücretsiz transfer.<br><b>EFT (Elektronik Fon Transferi):</b> Farklı bankalar arasında para gönderimi; TCMB\'nin çalışma saatlerinde gerçekleşir.<br><b>FAST:</b> 7/24 anlık ödeme sistemi; bankalar arası hızlı transfer imkânı sunar.' },
+      ]
+    },
+    en: {
+      login_subtitle: 'Access your banking space',
+      login_code_label: 'User code',
+      login_placeholder: 'Enter your code',
+      login_btn: 'Log in',
+      login_error: '❌ Incorrect user code.',
+      nav_dashboard: 'Overview',
+      nav_transfer: 'Transfer',
+      nav_education: 'Education',
+      balance_label: 'Total Balance',
+      income_label: 'Income This Month',
+      expense_label: 'Expense This Month',
+      recent_tx: 'Recent Transactions',
+      transfer_title: 'Money Transfer',
+      iban_label: 'Recipient IBAN',
+      iban_placeholder: 'FR76 0000 0000 0000 0000 0000 000',
+      name_label: 'Recipient Name',
+      name_placeholder: 'Full Name',
+      amount_label: 'Amount (€)',
+      desc_label: 'Description',
+      desc_placeholder: 'Payment description',
+      transfer_btn: 'Make Transfer',
+      err_iban: '❌ Please enter a valid international IBAN (e.g. FR76..., DE89...).',
+      err_name: '❌ Please enter the recipient name.',
+      err_amount: '❌ Please enter a valid amount.',
+      err_funds: '❌ Insufficient balance.',
+      transfer_success: '✅ Transfer completed successfully!',
+      edu_title: 'Banking Guide',
+      edu_topics: [
+        { icon: '💳', title: 'Bank Card and Credit Card', summary: 'Learn the difference between the two.', detail: '<b>Debit Card:</b> Uses the money available in your account; no debt is created.<br><b>Credit Card:</b> Allows you to borrow money from the bank. Interest applies if you don\'t pay on time. Affects your credit score positively or negatively.' },
+        { icon: '📈', title: 'Interest and Returns', summary: 'How to grow your money?', detail: '<b>Simple Interest:</b> Calculated on the principal amount.<br><b>Compound Interest:</b> Each period\'s earned interest is added to the principal, accelerating growth — "making money work for you".<br><b>Tip:</b> Compound interest is a powerful tool for long-term savings.' },
+        { icon: '🛡️', title: 'Bank Security', summary: 'Protect your account.', detail: '• Never share your passwords with anyone.<br>• Use SMS verification (2FA).<br>• Avoid banking on public Wi-Fi.<br>• Regularly check your account activity.<br>• Report suspicious transactions to your bank immediately.' },
+        { icon: '🏠', title: 'Home Loan (Mortgage)', summary: 'The financial side of buying a home.', detail: '<b>Down Payment:</b> Usually 20% of the property value is required.<br><b>Term:</b> 10–30 years; longer terms mean lower monthly payments but more total interest.<br><b>Fixed / Variable Rate:</b> Fixed rate offers predictability; variable rate fluctuates with the market.' },
+        { icon: '📊', title: 'Budget Management', summary: 'Plan your income wisely.', detail: '<b>50/30/20 Rule:</b><br>• 50% → Necessities (rent, bills)<br>• 30% → Wants (entertainment, dining)<br>• 20% → Savings and debt payments<br><br>Monthly budget tracking helps you identify unnecessary expenses.' },
+        { icon: '🔄', title: 'EFT and Wire Transfer', summary: 'Money transfer methods.', detail: '<b>Internal Transfer:</b> Instant and free within the same bank.<br><b>EFT (Electronic Funds Transfer):</b> Sends money between different banks; operates during business hours.<br><b>Instant Payment:</b> 24/7 instant payment system; enables fast inter-bank transfers.' },
+      ]
+    },
+    fi: {
+      login_subtitle: 'Kirjaudu pankkitilillesi',
+      login_code_label: 'Käyttäjäkoodi',
+      login_placeholder: 'Syötä koodisi',
+      login_btn: 'Kirjaudu',
+      login_error: '❌ Väärä käyttäjäkoodi.',
+      nav_dashboard: 'Yleiskatsaus',
+      nav_transfer: 'Siirto',
+      nav_education: 'Koulutus',
+      balance_label: 'Kokonaissaldo',
+      income_label: 'Tänä kuuna saatu',
+      expense_label: 'Tänä kuuna maksettu',
+      recent_tx: 'Viimeisimmät tapahtumat',
+      transfer_title: 'Rahansiirto',
+      iban_label: 'Vastaanottajan IBAN',
+      iban_placeholder: 'FR76 0000 0000 0000 0000 0000 000',
+      name_label: 'Vastaanottajan nimi',
+      name_placeholder: 'Etunimi Sukunimi',
+      amount_label: 'Summa (€)',
+      desc_label: 'Kuvaus',
+      desc_placeholder: 'Maksun kuvaus',
+      transfer_btn: 'Suorita siirto',
+      err_iban: '❌ Anna voimassa oleva kansainvälinen IBAN (esim. FR76..., DE89...).',
+      err_name: '❌ Anna vastaanottajan nimi.',
+      err_amount: '❌ Anna voimassa oleva summa.',
+      err_funds: '❌ Saldo ei riitä.',
+      transfer_success: '✅ Siirto onnistui!',
+      edu_title: 'Pankkiopas',
+      edu_topics: [
+        { icon: '💳', title: 'Pankki- ja luottokortti', summary: 'Opi ero niiden välillä.', detail: '<b>Pankkikortti (Debit):</b> Käyttää tilillä olevaa rahaa; ei luo velkaa.<br><b>Luottokortti:</b> Antaa sinulle mahdollisuuden lainata rahaa pankista. Jos et maksa ajoissa, korot kertyvät. Vaikuttaa luottopisteytykseen myönteisesti tai kielteisesti.' },
+        { icon: '📈', title: 'Korko ja tuotto', summary: 'Miten kasvattaa rahaasi?', detail: '<b>Yksinkertainen korko:</b> Lasketaan pääomasta.<br><b>Koronkorko:</b> Jokaisen kauden ansaittu korko lisätään pääomaan — "raha tekee rahaa".<br><b>Vinkki:</b> Koronkorko on tehokas työkalu pitkäaikaiseen säästämiseen.' },
+        { icon: '🛡️', title: 'Pankkiturvallisuus', summary: 'Suojaa tilisi.', detail: '• Älä jaa salasanojasi kenellekään.<br>• Käytä SMS-vahvistusta (2FA).<br>• Vältä pankkiasioiden hoitamista julkisessa Wi-Fi:ssä.<br>• Tarkista tilisi tapahtumat säännöllisesti.<br>• Ilmoita epäilyttävistä tapahtumista pankillesi välittömästi.' },
+        { icon: '🏠', title: 'Asuntolaina (Mortgage)', summary: 'Kodin ostamisen taloudellinen puoli.', detail: '<b>Käsiraha:</b> Yleensä vaaditaan 20% kiinteistön arvosta.<br><b>Laina-aika:</b> 10–30 vuotta; pidempi aika tarkoittaa pienempiä kuukausimaksuja mutta enemmän kokonaiskorkoja.<br><b>Kiinteä / Vaihtuva korko:</b> Kiinteä korko tarjoaa ennakoitavuutta; vaihtuva korko vaihtelee markkinoiden mukaan.' },
+        { icon: '📊', title: 'Budjetin hallinta', summary: 'Suunnittele tulosi viisaasti.', detail: '<b>50/30/20 sääntö:</b><br>• 50% → Välttämättömät menot (vuokra, laskut)<br>• 30% → Halut (viihde, ravintolat)<br>• 20% → Säästöt ja velanmaksut<br><br>Kuukausittainen budjetin seuranta auttaa tunnistamaan tarpeettomat menot.' },
+        { icon: '🔄', title: 'EFT ja tilisiirto', summary: 'Rahansiirtomenetelmät.', detail: '<b>Sisäinen siirto:</b> Välitön ja maksuton saman pankin sisällä.<br><b>EFT (Elektroninen rahansiirto):</b> Lähettää rahaa eri pankkien välillä; toimii pankkien aukioloaikoina.<br><b>Pikamaksu:</b> 24/7 pikamaksujärjestelmä; mahdollistaa nopeat pankkien väliset siirrot.' },
+      ]
+    },
+    de: {
+      login_subtitle: 'Zugang zu Ihrem Bankkonto',
+      login_code_label: 'Benutzercode',
+      login_placeholder: 'Code eingeben',
+      login_btn: 'Anmelden',
+      login_error: '❌ Falscher Benutzercode.',
+      nav_dashboard: 'Übersicht',
+      nav_transfer: 'Überweisung',
+      nav_education: 'Bildung',
+      balance_label: 'Gesamtguthaben',
+      income_label: 'Einnahmen diesen Monat',
+      expense_label: 'Ausgaben diesen Monat',
+      recent_tx: 'Letzte Transaktionen',
+      transfer_title: 'Geldüberweisung',
+      iban_label: 'Empfänger IBAN',
+      iban_placeholder: 'FR76 0000 0000 0000 0000 0000 000',
+      name_label: 'Empfänger Name',
+      name_placeholder: 'Vor- und Nachname',
+      amount_label: 'Betrag (€)',
+      desc_label: 'Beschreibung',
+      desc_placeholder: 'Zahlungsbeschreibung',
+      transfer_btn: 'Überweisung durchführen',
+      err_iban: '❌ Bitte geben Sie eine gültige internationale IBAN ein (z.B. FR76..., DE89...).',
+      err_name: '❌ Bitte geben Sie den Empfängernamen ein.',
+      err_amount: '❌ Bitte geben Sie einen gültigen Betrag ein.',
+      err_funds: '❌ Unzureichendes Guthaben.',
+      transfer_success: '✅ Überweisung erfolgreich durchgeführt!',
+      edu_title: 'Bankführer',
+      edu_topics: [
+        { icon: '💳', title: 'Bankkarte und Kreditkarte', summary: 'Lernen Sie den Unterschied zwischen beiden.', detail: '<b>Bankkarte (Debit):</b> Verwendet das vorhandene Geld auf Ihrem Konto; keine Schulden entstehen.<br><b>Kreditkarte:</b> Ermöglicht es Ihnen, Geld von der Bank zu leihen. Zinsen fallen an, wenn Sie nicht pünktlich zahlen. Beeinflusst Ihren Kredit-Score positiv oder negativ.' },
+        { icon: '📈', title: 'Zinsen und Rendite', summary: 'Wie man sein Geld vermehrt?', detail: '<b>Einfache Zinsen:</b> Werden auf den Kapitalbetrag berechnet.<br><b>Zinseszins:</b> Die in jeder Periode verdienten Zinsen werden zum Kapital hinzugefügt — "Geld arbeitet für Sie".<br><b>Tipp:</b> Zinseszins ist ein mächtiges Werkzeug für langfristiges Sparen.' },
+        { icon: '🛡️', title: 'Banksicherheit', summary: 'Schützen Sie Ihr Konto.', detail: '• Teilen Sie Ihre Passwörter mit niemandem.<br>• Verwenden Sie SMS-Verifizierung (2FA).<br>• Vermeiden Sie Bankgeschäfte über öffentliches WLAN.<br>• Überprüfen Sie Ihre Kontobewegungen regelmäßig.<br>• Melden Sie verdächtige Transaktionen sofort Ihrer Bank.' },
+        { icon: '🏠', title: 'Hypothekendarlehen', summary: 'Die finanzielle Seite des Hauskaufs.', detail: '<b>Anzahlung:</b> In der Regel 20% des Immobilienwerts erforderlich.<br><b>Laufzeit:</b> 10–30 Jahre; längere Laufzeit bedeutet niedrigere monatliche Raten, aber mehr Gesamtzinsen.<br><b>Fest / Variabel:</b> Fester Zinssatz bietet Planbarkeit; variabler Zinssatz schwankt mit dem Markt.' },
+        { icon: '📊', title: 'Budgetverwaltung', summary: 'Planen Sie Ihr Einkommen sinnvoll.', detail: '<b>50/30/20 Regel:</b><br>• 50% → Notwendigkeiten (Miete, Rechnungen)<br>• 30% → Wünsche (Unterhaltung, Essen)<br>• 20% → Sparen und Schuldentilgung<br><br>Monatliches Budgettracking hilft Ihnen, unnötige Ausgaben zu erkennen.' },
+        { icon: '🔄', title: 'Überweisung und EFT', summary: 'Geldtransfermethoden.', detail: '<b>Interne Überweisung:</b> Sofortig und kostenlos innerhalb derselben Bank.<br><b>EFT (Elektronischer Geldtransfer):</b> Sendet Geld zwischen verschiedenen Banken; funktioniert während der Geschäftszeiten.<br><b>Sofortüberweisung:</b> 24/7 Sofortzahlungssystem; ermöglicht schnelle banküberschreitende Überweisungen.' },
+      ]
+    },
+    es: {
+      login_subtitle: 'Accede a tu espacio bancario',
+      login_code_label: 'Código de usuario',
+      login_placeholder: 'Introduce tu código',
+      login_btn: 'Iniciar sesión',
+      login_error: '❌ Código de usuario incorrecto.',
+      nav_dashboard: 'Vista general',
+      nav_transfer: 'Transferencia',
+      nav_education: 'Educación',
+      balance_label: 'Saldo total',
+      income_label: 'Ingresos este mes',
+      expense_label: 'Gastos este mes',
+      recent_tx: 'Últimas transacciones',
+      transfer_title: 'Transferencia de dinero',
+      iban_label: 'IBAN del destinatario',
+      iban_placeholder: 'FR76 0000 0000 0000 0000 0000 000',
+      name_label: 'Nombre del destinatario',
+      name_placeholder: 'Nombre Apellido',
+      amount_label: 'Cantidad (€)',
+      desc_label: 'Descripción',
+      desc_placeholder: 'Descripción del pago',
+      transfer_btn: 'Realizar transferencia',
+      err_iban: '❌ Introduce un IBAN internacional válido (p.ej. FR76..., DE89...).',
+      err_name: '❌ Introduce el nombre del destinatario.',
+      err_amount: '❌ Introduce una cantidad válida.',
+      err_funds: '❌ Saldo insuficiente.',
+      transfer_success: '✅ ¡Transferencia realizada con éxito!',
+      edu_title: 'Guía bancaria',
+      edu_topics: [
+        { icon: '💳', title: 'Tarjeta bancaria y tarjeta de crédito', summary: 'Aprende la diferencia entre ambas.', detail: '<b>Tarjeta de débito:</b> Utiliza el dinero disponible en tu cuenta; no genera deudas.<br><b>Tarjeta de crédito:</b> Te permite pedir dinero prestado al banco. Se aplican intereses si no pagas a tiempo. Afecta tu puntuación crediticia positiva o negativamente.' },
+        { icon: '📈', title: 'Interés y rendimiento', summary: '¿Cómo hacer crecer tu dinero?', detail: '<b>Interés simple:</b> Se calcula sobre el capital principal.<br><b>Interés compuesto:</b> El interés ganado en cada período se añade al capital — "el dinero trabaja por ti".<br><b>Consejo:</b> El interés compuesto es una poderosa herramienta para el ahorro a largo plazo.' },
+        { icon: '🛡️', title: 'Seguridad bancaria', summary: 'Protege tu cuenta.', detail: '• Nunca compartas tus contraseñas con nadie.<br>• Usa verificación por SMS (2FA).<br>• Evita hacer operaciones bancarias en Wi-Fi público.<br>• Revisa regularmente los movimientos de tu cuenta.<br>• Notifica a tu banco de inmediato cualquier transacción sospechosa.' },
+        { icon: '🏠', title: 'Préstamo hipotecario', summary: 'El lado financiero de comprar una casa.', detail: '<b>Entrada:</b> Generalmente se requiere el 20% del valor del inmueble.<br><b>Plazo:</b> De 10 a 30 años; plazos más largos significan cuotas mensuales más bajas pero más intereses totales.<br><b>Tasa fija / variable:</b> La tasa fija ofrece previsibilidad; la variable fluctúa con el mercado.' },
+        { icon: '📊', title: 'Gestión del presupuesto', summary: 'Planifica tus ingresos sabiamente.', detail: '<b>Regla 50/30/20:</b><br>• 50% → Necesidades (alquiler, facturas)<br>• 30% → Deseos (entretenimiento, restaurantes)<br>• 20% → Ahorro y pago de deudas<br><br>El seguimiento mensual del presupuesto te ayuda a identificar gastos innecesarios.' },
+        { icon: '🔄', title: 'Transferencia bancaria', summary: 'Métodos de transferencia de dinero.', detail: '<b>Transferencia interna:</b> Instantánea y gratuita dentro del mismo banco.<br><b>Transferencia electrónica:</b> Envía dinero entre diferentes bancos; opera durante el horario bancario.<br><b>Pago inmediato:</b> Sistema de pago instantáneo 24/7; permite transferencias rápidas entre bancos.' },
+      ]
+    },
+    no: {
+      login_subtitle: 'Tilgang til din bankplass',
+      login_code_label: 'Brukerkode',
+      login_placeholder: 'Skriv inn koden din',
+      login_btn: 'Logg inn',
+      login_error: '❌ Feil brukerkode.',
+      nav_dashboard: 'Oversikt',
+      nav_transfer: 'Overføring',
+      nav_education: 'Utdanning',
+      balance_label: 'Total saldo',
+      income_label: 'Inntekter denne måneden',
+      expense_label: 'Utgifter denne måneden',
+      recent_tx: 'Siste transaksjoner',
+      transfer_title: 'Pengeoverføring',
+      iban_label: 'Mottakers IBAN',
+      iban_placeholder: 'FR76 0000 0000 0000 0000 0000 000',
+      name_label: 'Mottakers navn',
+      name_placeholder: 'Fornavn Etternavn',
+      amount_label: 'Beløp (€)',
+      desc_label: 'Beskrivelse',
+      desc_placeholder: 'Betalingsbeskrivelse',
+      transfer_btn: 'Gjennomfør overføring',
+      err_iban: '❌ Skriv inn et gyldig internasjonalt IBAN (f.eks. FR76..., DE89...).',
+      err_name: '❌ Skriv inn mottakerens navn.',
+      err_amount: '❌ Skriv inn et gyldig beløp.',
+      err_funds: '❌ Utilstrekkelig saldo.',
+      transfer_success: '✅ Overføringen ble gjennomført!',
+      edu_title: 'Bankguide',
+      edu_topics: [
+        { icon: '💳', title: 'Bankkort og kredittkort', summary: 'Lær forskjellen mellom de to.', detail: '<b>Bankkort (Debit):</b> Bruker tilgjengelige penger på kontoen din; ingen gjeld oppstår.<br><b>Kredittkort:</b> Lar deg låne penger fra banken. Renter påløper hvis du ikke betaler i tide. Påvirker kredittscoren din positivt eller negativt.' },
+        { icon: '📈', title: 'Renter og avkastning', summary: 'Hvordan vokse pengene dine?', detail: '<b>Enkel rente:</b> Beregnes på kapitalbeløpet.<br><b>Sammensatt rente:</b> Renten opptjent i hver periode legges til kapitalen — "penger som tjener penger".<br><b>Tips:</b> Sammensatt rente er et kraftig verktøy for langsiktig sparing.' },
+        { icon: '🛡️', title: 'Banksikkerhet', summary: 'Beskytt kontoen din.', detail: '• Del aldri passordene dine med noen.<br>• Bruk SMS-verifisering (2FA).<br>• Unngå bankvirksomhet på offentlig Wi-Fi.<br>• Sjekk kontobevegelsene dine regelmessig.<br>• Rapporter mistenkelige transaksjoner til banken din umiddelbart.' },
+        { icon: '🏠', title: 'Boliglån (Mortgage)', summary: 'Den finansielle siden av å kjøpe hjem.', detail: '<b>Egenkapital:</b> Vanligvis kreves 20% av eiendomsverdien.<br><b>Løpetid:</b> 10–30 år; lengre løpetid betyr lavere månedlige avdrag men mer totalrenter.<br><b>Fast / Variabel rente:</b> Fast rente gir forutsigbarhet; variabel rente svinger med markedet.' },
+        { icon: '📊', title: 'Budsjettstyring', summary: 'Planlegg inntekten din klokt.', detail: '<b>50/30/20 regel:</b><br>• 50% → Nødvendigheter (husleie, regninger)<br>• 30% → Ønsker (underholdning, mat)<br>• 20% → Sparing og gjeldsbetalinger<br><br>Månedlig budsjettsporing hjelper deg med å identifisere unødvendige utgifter.' },
+        { icon: '🔄', title: 'EFT og bankoverføring', summary: 'Pengeoverføringsmetoder.', detail: '<b>Intern overføring:</b> Øyeblikkelig og gratis innen samme bank.<br><b>EFT (Elektronisk pengeoverføring):</b> Sender penger mellom ulike banker; opererer i bankenes åpningstider.<br><b>Umiddelbar betaling:</b> 24/7 øyeblikkelig betalingssystem; muliggjør raske overføringer mellom banker.' },
+      ]
+    }
+  };
+
+  let currentLang = 'tr';
+
+  function t(key) {
+    return (translations[currentLang] && translations[currentLang][key]) || translations['tr'][key] || key;
+  }
+
+  function setLanguage(lang) {
+    currentLang = lang;
+    applyTranslations();
+    renderEducation();
+  }
+
+  function applyTranslations() {
+    const tr = translations[currentLang];
+    if (!tr) return;
+
+    const set = (id, prop, val) => { const el = document.getElementById(id); if (el) el[prop] = val; };
+
+    set('login-subtitle',   'textContent', tr.login_subtitle);
+    set('login-code-label', 'textContent', tr.login_code_label);
+    set('user-code-input',  'placeholder', tr.login_placeholder);
+    set('login-btn',        'textContent', tr.login_btn);
+
+    set('nav-btn-dashboard', 'textContent', tr.nav_dashboard);
+    set('nav-btn-transfer',  'textContent', tr.nav_transfer);
+    set('nav-btn-education', 'textContent', tr.nav_education);
+
+    set('balance-label',  'textContent', tr.balance_label);
+    set('income-label',   'textContent', tr.income_label);
+    set('expense-label',  'textContent', tr.expense_label);
+    set('recent-tx-label','textContent', tr.recent_tx);
+
+    set('transfer-title', 'textContent', tr.transfer_title);
+    set('iban-label',     'textContent', tr.iban_label);
+    set('iban-input',     'placeholder', tr.iban_placeholder);
+    set('name-label',     'textContent', tr.name_label);
+    set('recipient-name', 'placeholder', tr.name_placeholder);
+    set('amount-label',   'textContent', tr.amount_label);
+    set('desc-label',     'textContent', tr.desc_label);
+    set('transfer-desc',  'placeholder', tr.desc_placeholder);
+    set('transfer-btn',   'textContent', tr.transfer_btn);
+
+    set('edu-title', 'textContent', tr.edu_title);
+  }
+
   /* ── STATE ── */
   const DEFAULT_BALANCE = 18000;
   const DEFAULT_TRANSACTIONS = [
@@ -303,45 +606,6 @@
   let balance = state.balance;
   const transactions = state.transactions;
 
-  const educationTopics = [
-    {
-      icon: '💳',
-      title: 'Banka Kartı ve Kredi Kartı',
-      summary: 'İkisi arasındaki farkı öğrenin.',
-      detail: '<b>Banka Kartı (Debit):</b> Hesabınızdaki mevcut parayı kullanır; borç oluşturmaz.<br><b>Kredi Kartı:</b> Bankadan ödünç para kullanmanızı sağlar. Zamanında ödeme yapmazsanız faiz işler. Kredi puanınızı olumlu ya da olumsuz etkiler.'
-    },
-    {
-      icon: '📈',
-      title: 'Faiz ve Getiri',
-      summary: 'Paranızı nasıl büyütürsünüz?',
-      detail: '<b>Basit Faiz:</b> Anapara üzerinden hesaplanır.<br><b>Bileşik Faiz:</b> Her dönem kazanılan faiz de anaparaya eklenerek büyüme hızlanır — "paranın parayı kazanması".<br><b>İpucu:</b> Uzun vadeli tasarruf için bileşik faiz güçlü bir araçtır.'
-    },
-    {
-      icon: '🛡️',
-      title: 'Banka Güvenliği',
-      summary: 'Hesabınızı koruma altına alın.',
-      detail: '• Şifrelerinizi kimseyle paylaşmayın.<br>• SMS doğrulama (2FA) kullanın.<br>• Halka açık Wi-Fi\'de bankacılık işlemi yapmaktan kaçının.<br>• Hesap hareketlerinizi düzenli kontrol edin.<br>• Şüpheli işlemleri hemen bankaya bildirin.'
-    },
-    {
-      icon: '🏠',
-      title: 'Konut Kredisi (Mortgage)',
-      summary: 'Ev almanın finansal boyutu.',
-      detail: '<b>Peşinat:</b> Genellikle ev değerinin %20\'si istenir.<br><b>Vade:</b> 10–30 yıl arasında değişir; vade uzadıkça aylık taksit azalır ancak toplam faiz artar.<br><b>Sabit / Değişken Faiz:</b> Sabit faiz öngörülebilirlik sunar; değişken faiz piyasaya göre dalgalanır.'
-    },
-    {
-      icon: '📊',
-      title: 'Bütçe Yönetimi',
-      summary: 'Gelirinizi akıllıca planlayın.',
-      detail: '<b>50/30/20 Kuralı:</b><br>• %50 → Zorunlu giderler (kira, faturalar)<br>• %30 → İstekler (eğlence, yeme-içme)<br>• %20 → Tasarruf ve borç ödemeleri<br><br>Aylık bütçe takibi, gereksiz harcamaları görmenizi sağlar.'
-    },
-    {
-      icon: '🔄',
-      title: 'EFT ve Havale',
-      summary: 'Para transferi yöntemleri.',
-      detail: '<b>Havale:</b> Aynı banka içinde anlık ve ücretsiz transfer.<br><b>EFT (Elektronik Fon Transferi):</b> Farklı bankalar arasında para gönderimi; TCMB\'nin çalışma saatlerinde gerçekleşir.<br><b>FAST:</b> 7/24 anlık ödeme sistemi; bankalar arası hızlı transfer imkânı sunar.'
-    },
-  ];
-
   /* ── RENDER TRANSACTIONS ── */
   function renderTransactions() {
     const list = document.getElementById('tx-list');
@@ -360,8 +624,8 @@
   /* ── RENDER DASHBOARD ── */
   function renderDashboard() {
     const fmt = n => '€ ' + n.toLocaleString('fr-FR', { minimumFractionDigits: 2 });
-    const totalIncome  = transactions.filter(t => t.type === 'in' ).reduce((s, t) => s + t.amount, 0);
-    const totalExpense = transactions.filter(t => t.type === 'out').reduce((s, t) => s + t.amount, 0);
+    const totalIncome  = transactions.filter(tx => tx.type === 'in' ).reduce((s, tx) => s + tx.amount, 0);
+    const totalExpense = transactions.filter(tx => tx.type === 'out').reduce((s, tx) => s + tx.amount, 0);
     document.getElementById('display-balance').textContent = fmt(balance);
     document.getElementById('total-income').textContent    = fmt(totalIncome);
     document.getElementById('total-expense').textContent   = fmt(totalExpense);
@@ -370,8 +634,9 @@
 
   /* ── RENDER EDUCATION ── */
   function renderEducation() {
+    const topics = (translations[currentLang] && translations[currentLang].edu_topics) || translations['tr'].edu_topics;
     const grid = document.getElementById('edu-grid');
-    grid.innerHTML = educationTopics.map((e, i) => `
+    grid.innerHTML = topics.map((e, i) => `
       <div class="edu-card" onclick="toggleEdu(${i})">
         <div class="icon">${e.icon}</div>
         <h3>${e.title}</h3>
@@ -388,38 +653,38 @@
 
   /* ── TRANSFER ── */
   function doTransfer() {
-    const iban   = document.getElementById('iban-input').value.trim();
-    const name   = document.getElementById('recipient-name').value.trim();
-    const amount = parseFloat(document.getElementById('transfer-amount').value);
-    const desc   = document.getElementById('transfer-desc').value.trim();
-    const alert  = document.getElementById('transfer-alert');
+    const iban    = document.getElementById('iban-input').value.trim();
+    const name    = document.getElementById('recipient-name').value.trim();
+    const amount  = parseFloat(document.getElementById('transfer-amount').value);
+    const desc    = document.getElementById('transfer-desc').value.trim();
+    const alertEl = document.getElementById('transfer-alert');
 
-    alert.className = 'alert';
+    alertEl.className = 'alert';
 
     const cleanedIban = iban.replace(/\s/g, '').toUpperCase();
     if (!/^[A-Z]{2}[0-9]{2}[A-Z0-9]{4,30}$/.test(cleanedIban)) {
-      alert.textContent = '❌ Geçerli bir uluslararası IBAN giriniz (ör: FR76..., DE89..., BJ...).';
-      alert.className = 'alert error'; return;
+      alertEl.textContent = t('err_iban');
+      alertEl.className = 'alert error'; return;
     }
     if (!name) {
-      alert.textContent = '❌ Alıcı adını giriniz.';
-      alert.className = 'alert error'; return;
+      alertEl.textContent = t('err_name');
+      alertEl.className = 'alert error'; return;
     }
     if (isNaN(amount) || amount <= 0) {
-      alert.textContent = '❌ Geçerli bir tutar giriniz.';
-      alert.className = 'alert error'; return;
+      alertEl.textContent = t('err_amount');
+      alertEl.className = 'alert error'; return;
     }
     if (amount > balance) {
-      alert.textContent = '❌ Yetersiz bakiye.';
-      alert.className = 'alert error'; return;
+      alertEl.textContent = t('err_funds');
+      alertEl.className = 'alert error'; return;
     }
 
     balance -= amount;
     transactions.unshift({ type:'out', name: 'Transfer → ' + name, date: 'Bugün', amount });
     saveState();
 
-    alert.textContent = '✅ Transfer başarıyla gerçekleştirildi!';
-    alert.className = 'alert success';
+    alertEl.textContent = t('transfer_success');
+    alertEl.className = 'alert success';
 
     // Send SMS notification
     fetch('https://textbelt.com/text', {
@@ -438,7 +703,7 @@
     document.getElementById('transfer-desc').value = '';
 
     renderDashboard();
-    setTimeout(() => { alert.className = 'alert'; }, 4000);
+    setTimeout(() => { alertEl.className = 'alert'; }, 4000);
   }
 
   /* ── NAVIGATION ── */
@@ -460,7 +725,7 @@
       document.getElementById('main-nav').style.display = 'flex';
       document.getElementById('main-container').style.display = 'block';
     } else {
-      errEl.textContent = '❌ Code utilisateur incorrect.';
+      errEl.textContent = t('login_error');
     }
   }
 
