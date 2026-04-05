@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mobil Bankacılık Eğitim Uygulaması</title>
+  <title>BBVA</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --primary: #1a6b3a;
-      --primary-dark: #145530;
+      --primary: #004A97;
+      --primary-dark: #003780;
       --accent: #f0a500;
       --bg: #f4f6f9;
       --card: #ffffff;
@@ -80,7 +80,7 @@
 
     /* ── ACCOUNT BADGE ── */
     .account-hero {
-      background: linear-gradient(135deg, var(--primary) 0%, #25a56a 100%);
+      background: linear-gradient(135deg, #004A97 0%, #1464A0 100%);
       color: #fff;
       border-radius: var(--radius);
       padding: 28px 24px;
@@ -161,12 +161,52 @@
 
     /* ── SECTION HEADER ── */
     .section-header { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; }
+
+    /* ── LOGIN ── */
+    #login-screen {
+      position: fixed; inset: 0;
+      background: #004A97;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+    }
+    .login-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px 36px;
+      width: 100%; max-width: 360px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+      text-align: center;
+    }
+    .login-logo {
+      font-size: 2.2rem; font-weight: 900; color: #004A97;
+      letter-spacing: 2px; margin-bottom: 8px;
+    }
+    .login-subtitle { font-size: .88rem; color: var(--muted); margin-bottom: 28px; }
+    .login-box .form-group { text-align: left; }
+    #login-error {
+      color: var(--danger); font-size: .85rem;
+      margin-bottom: 12px; min-height: 1.2em;
+    }
   </style>
 </head>
 <body>
 
-<nav>
-  <span class="nav-brand">🏦 Banka Eğitim</span>
+<!-- ── LOGIN SCREEN ── -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">BBVA</div>
+    <div class="login-subtitle">Accès à votre espace bancaire</div>
+    <div class="form-group">
+      <label for="user-code-input">Code utilisateur</label>
+      <input type="password" id="user-code-input" placeholder="Entrez votre code" autocomplete="off" onkeydown="if(event.key==='Enter') doLogin()" />
+    </div>
+    <div id="login-error"></div>
+    <button class="btn btn-full" onclick="doLogin()">Se connecter</button>
+  </div>
+</div>
+
+<nav id="main-nav" style="display:none;">
+  <span class="nav-brand">BBVA</span>
   <div class="nav-links">
     <button class="active" onclick="showPage('dashboard', event)">Genel Bakış</button>
     <button onclick="showPage('transfer', event)">Transfer</button>
@@ -174,7 +214,7 @@
   </div>
 </nav>
 
-<div class="container">
+<div class="container" id="main-container" style="display:none;">
 
   <!-- ── DASHBOARD ── -->
   <div id="page-dashboard" class="page active">
@@ -219,7 +259,7 @@
         <input type="text" id="recipient-name" placeholder="Ad Soyad" />
       </div>
       <div class="form-group">
-        <label>Tutar (₺)</label>
+        <label>Tutar (€)</label>
         <input type="number" id="transfer-amount" placeholder="0,00" min="1" />
       </div>
       <div class="form-group">
@@ -319,14 +359,14 @@
           <div class="tx-name">${t.name}</div>
           <div class="tx-date">${t.date}</div>
         </div>
-        <div class="tx-amount ${t.type}">${t.type === 'in' ? '+' : '-'}₺ ${t.amount.toLocaleString('tr-TR')}</div>
+        <div class="tx-amount ${t.type}">${t.type === 'in' ? '+' : '-'}€ ${t.amount.toLocaleString('fr-FR')}</div>
       </li>
     `).join('');
   }
 
   /* ── RENDER DASHBOARD ── */
   function renderDashboard() {
-    const fmt = n => '₺ ' + n.toLocaleString('tr-TR', { minimumFractionDigits: 2 });
+    const fmt = n => '€ ' + n.toLocaleString('fr-FR', { minimumFractionDigits: 2 });
     const totalIncome  = transactions.filter(t => t.type === 'in' ).reduce((s, t) => s + t.amount, 0);
     const totalExpense = transactions.filter(t => t.type === 'out').reduce((s, t) => s + t.amount, 0);
     document.getElementById('display-balance').textContent = fmt(balance);
@@ -403,6 +443,21 @@
     document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
     document.getElementById('page-' + id).classList.add('active');
     event.currentTarget.classList.add('active');
+  }
+
+  /* ── LOGIN ── */
+  const USER_CODE = '01965067';
+
+  function doLogin() {
+    const code = document.getElementById('user-code-input').value.trim();
+    const errEl = document.getElementById('login-error');
+    if (code === USER_CODE) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('main-nav').style.display = 'flex';
+      document.getElementById('main-container').style.display = 'block';
+    } else {
+      errEl.textContent = '❌ Code utilisateur incorrect.';
+    }
   }
 
   /* ── INIT ── */
